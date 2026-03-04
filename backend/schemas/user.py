@@ -1,6 +1,8 @@
 from pydantic import BaseModel, EmailStr
 from ..db.base import UserRole
 
+
+# Pydantic models for user data insertion 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str

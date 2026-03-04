@@ -22,6 +22,7 @@ engine = create_engine(
 
 Session = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
+# get_db function for create session 
 def get_db():
     session = None
     try:
