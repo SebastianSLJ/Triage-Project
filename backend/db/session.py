@@ -14,7 +14,7 @@ DB_HOST = os.getenv('DB_HOST')
 # URI for DB conection
 DB_URI = f'postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 
-# URI creation for engine objetct (DB conection)
+# URI creation for engine object (DB conection)
 engine = create_engine(
     DB_URI,
     echo = True

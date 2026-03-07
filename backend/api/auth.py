@@ -1,16 +1,16 @@
 from fastapi import HTTPException, APIRouter, status, Depends
-from ..schemas.user import UserCreate, UserOut
+from ..schemas.user import UserCreate, UserOut, UserLogin
 from sqlalchemy.orm import Session
 from ..db.session import get_db
 from ..db.base import User
-from ..core.security import get_password_hash
+from ..core.security import get_password_hash, verify_password, create_access_token
 
 router = APIRouter()
 
 
 @router.post(
     # Path
-    '/registration/',
+    '/registration',
     # Define qué datos verá el cliente (oculta la contraseña)
     response_model=UserOut,
     # El código 201 indica que un recurso fue creado con éxito
@@ -18,9 +18,9 @@ router = APIRouter()
     # Estas etiquetas agrupan tus rutas en la documentación /docs
     tags=["authentication"],
     # Un resumen corto que aparece en la lista de Swagger
-    summary="Registrar un nuevo usuario",
+    summary="New user registration",
     # Una descripción detallada que explica reglas de negocio
-    description="Crea un usuario base en la DB. El perfil (Médico/Paciente) se debe completar en un paso posterior."
+    description="Create an user in DB. The profile (Doctor/Pacient) must be completed after"
 )
 
 # Function for user registration in DB 
@@ -41,12 +41,12 @@ def registration(user: UserCreate, db: Session = Depends(get_db)):
         )
     
     #Hash password before create user instance 
-    secure_password = get_password_hash(user.password)
+    hashed_pass = get_password_hash(user.password)
 
     # User instance for commit user
     new_user = User(
         email=user.email, 
-        hashed_password=secure_password, 
+        hashed_password=hashed_pass, 
         role=user.role
         )
     
@@ -59,5 +59,26 @@ def registration(user: UserCreate, db: Session = Depends(get_db)):
     # Return new_user to watch de created data
     return new_user
 
-
-
+@router.post('/login',summary='Login and Token get')
+def login(credentials: UserLogin, db: Session = Depends(get_db)):
+    """
+    1. Search user by email
+    2. Compare plain password with hashed password in DB
+    3. Validate, generate and return JWT Token 
+    """
+    # 1. Search for user (filter by email and compare with the email entrance in login)
+    user = db.query(User).filter(User.email==credentials.email).first()
+    # 2. Verify the password using the function in security
+    if not user and not verify_password(credentials.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Incorrect email or password',
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    # 3. Generate the token 
+    # Save email in subject fieald in JWT
+    access_token = create_access_token(data={'sub': user.email})
+    return{
+        'access_token': access_token,
+        'token:type': 'bearer'
+    }

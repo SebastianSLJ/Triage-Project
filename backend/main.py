@@ -12,4 +12,4 @@ app = FastAPI()
 def root():
     return {"Hello: World"}
 
-app.include_router(auth_router, prefix='/api/auth', tags=['authentication'])
+app.include_router(auth_router, prefix='/api/auth', tags=['Authentication'])
