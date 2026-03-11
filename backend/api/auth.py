@@ -1,9 +1,11 @@
 from fastapi import HTTPException, APIRouter, status, Depends
-from ..schemas.user import UserCreate, UserOut, UserLogin
+from fastapi.security import OAuth2PasswordRequestForm
+from ..schemas.user import UserCreate, UserOut
 from sqlalchemy.orm import Session
 from ..db.session import get_db
 from ..db.base import User
 from ..core.security import get_password_hash, verify_password, create_access_token
+from ..api.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -16,7 +18,7 @@ router = APIRouter()
     # El código 201 indica que un recurso fue creado con éxito
     status_code=status.HTTP_201_CREATED,
     # Estas etiquetas agrupan tus rutas en la documentación /docs
-    tags=["authentication"],
+    tags=["Authentication"],
     # Un resumen corto que aparece en la lista de Swagger
     summary="New user registration",
     # Una descripción detallada que explica reglas de negocio
@@ -60,25 +62,33 @@ def registration(user: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 @router.post('/login',summary='Login and Token get')
-def login(credentials: UserLogin, db: Session = Depends(get_db)):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
     1. Search user by email
     2. Compare plain password with hashed password in DB
     3. Validate, generate and return JWT Token 
     """
     # 1. Search for user (filter by email and compare with the email entrance in login)
-    user = db.query(User).filter(User.email==credentials.email).first()
+    user = db.query(User).filter(User.email == form_data.username).first()
     # 2. Verify the password using the function in security
-    if not user and not verify_password(credentials.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Incorrect email or password',
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+    if not user or not verify_password(form_data.password, user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='Incorrect email or password',
+                headers={"WWW-Authenticate": "Bearer"}
+            )
     # 3. Generate the token 
-    # Save email in subject fieald in JWT
+    # Save email in subject field in JWT
     access_token = create_access_token(data={'sub': user.email})
     return{
         'access_token': access_token,
-        'token:type': 'bearer'
+        'token_type': 'bearer'
     }
+
+@router.get("/me", response_model=UserOut)
+def read_users_me(current_user: User = Depends(get_current_user)):
+    """
+    Si llegamos aquí, es porque el 'Depends' hizo toda la magia:
+    validó el token, buscó en la DB y nos entregó el objeto usuario.
+    """
+    return current_user

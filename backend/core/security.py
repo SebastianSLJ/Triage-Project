@@ -1,15 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
-from dotenv import load_dotenv
-import os
 import jwt
-
-
-load_dotenv()
-
-SECRET_KEY = os.getenv('SECRET_KEY')
-ALGORITHM = os.getenv('ALGORITHM')
-ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES')
+from .config import settings
 
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
@@ -26,15 +18,15 @@ def create_access_token(data: dict):
     """
     Generates a signed token that the client will use to authenticate.
     """
-    to_encode = data.copy()
+    to_encode = data.copy() # dict
 
     # Calculate the expiration time 
-    expire = datetime.now(timezone.utc)+timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.now(timezone.utc)+timedelta(minutes=int(settings.ACCESS_TOKEN_EXPIRE_MINUTES))
 
     # Add expiration "payload" (Token body)
     to_encode.update({'exp': expire})
 
     # Sign the token with SECRET_KEY
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
     return encoded_jwt
