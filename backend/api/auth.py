@@ -28,10 +28,10 @@ router = APIRouter()
 # Function for user registration in DB 
 def registration(user: UserCreate, db: Session = Depends(get_db)):
     """
-    Registra un nuevo usuario en el sistema.
+    Registrates a new user    
     
-    Verifica que el email no exista previamente y crea una identidad base 
-    con el rol especificado.
+    Verify that email doesn't exist previously and create a base 
+    identity with the specified role.
     """
     #User searching (Early return)    
     existent_user = db.query(User).filter(User.email == user.email).first()
@@ -61,7 +61,7 @@ def registration(user: UserCreate, db: Session = Depends(get_db)):
     # Return new_user to watch de created data
     return new_user
 
-@router.post('/login',summary='Login and Token get')
+@router.post('/login',summary='Login and Token get',tags=["Authentication"])
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
     1. Search user by email
