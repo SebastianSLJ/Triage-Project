@@ -1,9 +1,10 @@
 from fastapi import HTTPException, APIRouter, status, Depends
+from typing import List
 from ..api.dependencies import get_current_user
 from ..db.base import User, Doctor, UserRole
 from ..db.session import get_db
 from sqlalchemy.orm import Session
-from ..schemas.doctor import DoctorProfileUpdate
+from ..schemas.doctor import DoctorProfile, DoctorProfileOut, PatientOut
 
 
 router = APIRouter()
@@ -15,7 +16,7 @@ router = APIRouter()
     summary='Doctor profile completion',    
     description='Completes the doctor profile with specified data'    
 )
-def profile(doctor_data: DoctorProfileUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):  
+def profile(doctor_data: DoctorProfile, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):  
     # role validation
     if current_user.role!=UserRole.DOCTOR: 
         raise HTTPException(
@@ -37,5 +38,14 @@ def profile(doctor_data: DoctorProfileUpdate, current_user: User = Depends(get_c
 
     return {'message': 'Succesfully completed profile'}
 
+@router.get('/me', response_model=DoctorProfileOut)
+def read_doctors_info(current_doctor: User = Depends(get_current_user)):
+    # If user is a doctor but has not completed his profile, 
+    # doctor_profile will show none in this field (doctor Schema defined)
+    return current_doctor
 
-
+@router.get('/patients', response_model=List[PatientOut])
+def read_doctor_patient(current_user: User = Depends(get_current_user)):
+    if current_user.role!= UserRole.DOCTOR:
+        raise HTTPException(status_code=403, detail='Not Authorized')
+    return current_user.doctor_profile.patients
