@@ -85,7 +85,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         'token_type': 'bearer'
     }
 
-@router.get("/me", response_model=UserOut)
+@router.get("/me", response_model=UserOut, tags=["Authentication"])
 def read_users_me(current_user: User = Depends(get_current_user)):
     """
     Si llegamos aquí, es porque el 'Depends' hizo toda la magia:

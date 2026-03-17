@@ -1,12 +1,23 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
 from ..db.base import UserRole
+from datetime import date
+
+class MessageOut(BaseModel):
+    message: str
+
+# We use this class to obtain data (email and is_active) from the table user 
+# This data is not in Patient model (sqlaclhemy)
+class UserBasicInfo(BaseModel):
+    email: EmailStr
+    is_active: bool
+    model_config = ConfigDict(from_attributes=True)
 
 class DoctorProfile(BaseModel):
     speciality: str
     medical_license: str
 
 class DoctorProfileOut(BaseModel):
-    email: str
+    email: EmailStr
     role: UserRole
     is_active: bool
     doctor_profile: DoctorProfile | None = None
@@ -14,8 +25,8 @@ class DoctorProfileOut(BaseModel):
 
 class PatientOut(BaseModel):
     name: str
-    birthdate: str
+    birthdate: date
     gender: str
-    email: str
-    is_active: bool
+    # Acess to another table attributes to complete data (Patients in visualisation endpoint (Doctor))
+    user: UserBasicInfo
     model_config = ConfigDict(from_attributes=True)

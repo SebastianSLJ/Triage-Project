@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from backend.api.auth import router as auth_router
 from backend.api.doctors import router as doctors_router
+from backend.api.patients import router as patients_router
 from backend.db.base import Base
 from backend.db.session import engine
 
@@ -15,3 +16,4 @@ def root():
 
 app.include_router(auth_router, prefix='/api/auth')
 app.include_router(doctors_router, prefix='/api/doctors')
+app.include_router(patients_router, prefix='/api/patients')

@@ -11,6 +11,10 @@ class UserRole(enum.Enum):
     DOCTOR = 'doctor'
     PATIENT = 'patient'
 
+class UserGender(enum.Enum):
+    MALE = 'Male'
+    FEMALE = 'Female'
+
 class PriorityEnum(enum.Enum):
     MILD = 'mild'
     MODERATE = 'moderate'
@@ -48,7 +52,7 @@ class Patient(Base):
     doctor_id = Column(Integer, ForeignKey('doctors.id'), nullable=True)
     name = Column(String(255), nullable=False)
     birthdate = Column(DateTime)
-    gender = Column(String(255))
+    gender = Column(Enum(UserGender), nullable=False)
     
     # Relations 
     user = relationship('User', back_populates='patient_profile')
