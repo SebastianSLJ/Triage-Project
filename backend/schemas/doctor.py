@@ -2,6 +2,8 @@ from pydantic import BaseModel, ConfigDict, EmailStr
 from ..db.base import UserRole
 from datetime import date
 
+
+# Standard schema for generic API responses.
 class MessageOut(BaseModel):
     message: str
 

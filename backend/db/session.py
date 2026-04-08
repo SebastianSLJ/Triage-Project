@@ -18,9 +18,8 @@ def get_db():
     try:
         session = Session()
         yield session       
-    except:
-        if session is not None: 
-            session.rollback()
+    except Exception:
+        session.rollback()
         raise
     finally:
         if session: 

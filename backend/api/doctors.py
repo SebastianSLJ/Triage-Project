@@ -23,7 +23,7 @@ def denied_access(user: User, requierd_role: UserRole):
     description='Completes the doctor profile with specified data',
     response_model=MessageOut   
 )
-def profile(doctor_data: DoctorProfile, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):  
+def complete_profile(doctor_data: DoctorProfile, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):  
     # role validation
     denied_access(current_user, UserRole.DOCTOR)
     existing_profile = db.query(Doctor).filter(Doctor.user_id==current_user.id).first()
@@ -31,7 +31,7 @@ def profile(doctor_data: DoctorProfile, current_user: User = Depends(get_current
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail='Doctor already exists'
         )
-    # Complete the doctor profile using the pydantic model to verify de data entry (Specific fields - speciality, medical_license)
+    # Complete the doctor profile using the pydantic model to verify the data entry (Specific fields - speciality, medical_license)
     new_doctor = Doctor(
         user_id = current_user.id,
         speciality = doctor_data.speciality,
@@ -46,8 +46,10 @@ def profile(doctor_data: DoctorProfile, current_user: User = Depends(get_current
 
 @router.get('/me', response_model=DoctorProfileOut, tags=['Doctors'])
 def read_doctors_info(current_user: User = Depends(get_current_user)):
-    # If user is a doctor but has not completed his profile, 
-    # doctor_profile will show 'none' in this field (doctor Schema defined)
+    """
+    If user is a doctor but has not completed his profile, 
+    doctor_profile will show 'none' in this field (doctor Schema defined)
+    """
     denied_access(current_user, UserRole.DOCTOR)
     return current_user
 

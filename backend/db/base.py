@@ -15,10 +15,12 @@ class UserGender(enum.Enum):
     MALE = 'Male'
     FEMALE = 'Female'
 
-class PriorityEnum(enum.Enum):
-    MILD = 'mild'
-    MODERATE = 'moderate'
-    SEVERE = 'severe'
+class PriorityEnum(enum.IntEnum):
+    ONE = 1
+    TWO = 2
+    THREE = 3
+    FOUR = 4
+    FIVE = 5
 
 # Users table
 class User(Base):
@@ -44,6 +46,7 @@ class Doctor(Base):
 
     user = relationship('User', back_populates='doctor_profile')
     patients = relationship('Patient', back_populates='doctor')
+    triages = relationship('Triage', back_populates='doctor')
 
 class Patient(Base):
     __tablename__ = 'patients'
@@ -64,20 +67,25 @@ class Triage(Base):
 
     id = Column(Integer, primary_key=True)
     patient_id = Column(Integer, ForeignKey('patients.id'), nullable=False)
+    doctor_id = Column(Integer, ForeignKey('doctors.id'),nullable=False)
     created_at = Column(DateTime, server_default=func.now())
 
     # Entries for UML Model 
+    description = Column(Text, nullable=False)
     symptoms = Column(Text, nullable=False)
-    heart_rate = Column(Integer)
-    blood_pressure = Column(String(20))
-    temperature = Column(Float)
-    oxygenation = Column(Integer)
+    HR = Column(Integer) # Heart Rate
+    spo2 = Column(Integer) # Peripheral Oxygen Saturation
+    temperature = Column(Float) 
+    SBP = Column(Integer) # Systolic Blood Pressure
+    RR = Column(Integer) # Respiratory Rate
+    duration_hours = Column(Float)
+    severe_history = Column(Integer)    
 
     # Results
-
     priority = Column(Enum(PriorityEnum), nullable=False)
     doctor_notes = Column(Text, nullable=True)
 
     #Relations 
     patient = relationship('Patient', back_populates='triages')
+    doctor = relationship('Doctor', back_populates='triages')
 

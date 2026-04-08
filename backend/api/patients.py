@@ -18,6 +18,7 @@ router = APIRouter()
         response_model=MessageOut              
     )
 def patient_register(patient_data: PatientProfile, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # Validates the user role that creates complements the patient info (Must be a Doctor)
     denied_access(current_user, UserRole.DOCTOR)
     target_user = db.query(User).filter(User.email==patient_data.email).first()
     if not target_user:
@@ -25,7 +26,7 @@ def patient_register(patient_data: PatientProfile, current_user: User = Depends(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='No user found with this email. The patient must register an account first'
         )
-    # Validates the user role (Must be patient)
+    # Validates the user role that we're searching (Must be patient)
     denied_access(target_user, UserRole.PATIENT)
     # Validates that doctor´s profile is complete 
     if not current_user.doctor_profile:
