@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import ForeignKey, String, Column, Integer, Enum, DateTime, Text, Float, Boolean
+from sqlalchemy import ForeignKey, String, Column, Integer, Enum, DateTime, Text, Float, Boolean, Table
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.sql import func
 
@@ -22,14 +22,22 @@ class PriorityEnum(enum.IntEnum):
     FOUR = 4
     FIVE = 5
 
+class UserState(enum.Enum):
+    ACTIVE = "ACTIVE"
+    PENDING = "PENDING"
+
 # Users table
 class User(Base):
     __tablename__   = 'users'
     id = Column(Integer, primary_key=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
+    DNI = Column(String(20), unique=True, nullable=False)
+    state = Column(Enum(UserState), nullable=False, default=UserState.PENDING)
     role = Column(Enum(UserRole), nullable=False)
     is_active = Column(Boolean, default=True)
+    birthdate = Column(DateTime, nullable=False)
+    gender = Column(Enum(UserGender), nullable=False)
     created_at = Column(DateTime, server_default=func.now())
 
     # Relations
@@ -37,29 +45,39 @@ class User(Base):
     doctor_profile = relationship("Doctor", back_populates="user", uselist=False)
 
 
+# Intermediate table for Patient and Doctor intermediate
+class DoctorPatient(Base):
+    __tablename__ = 'doctor_patient'    
+    doctor_id = Column(Integer, ForeignKey('doctors.id'), primary_key=True)
+    patient_id = Column(Integer, ForeignKey('patients.id'), primary_key=True)    
+    
+    created_at = Column(DateTime, server_default=func.now())
+    is_active = Column(Boolean, default=True)
+
+    # Relaciones hacia los modelos originales
+    doctor = relationship("Doctor", back_populates="patient_associations")
+    patient = relationship("Patient", back_populates="doctor_associations")
+
 class Doctor(Base):
     __tablename__ = 'doctors'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
+    doctor_name = Column(String(255), nullable=False) 
     speciality = Column(String(100))
     medical_license = Column(String(100), unique=True)
 
     user = relationship('User', back_populates='doctor_profile')
-    patients = relationship('Patient', back_populates='doctor')
-    triages = relationship('Triage', back_populates='doctor')
+    triages = relationship('Triage', back_populates='doctor')    
+    patient_associations = relationship("DoctorPatient", back_populates="doctor")
 
 class Patient(Base):
     __tablename__ = 'patients'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    doctor_id = Column(Integer, ForeignKey('doctors.id'), nullable=True)
-    name = Column(String(255), nullable=False)
-    birthdate = Column(DateTime)
-    gender = Column(Enum(UserGender), nullable=False)
-    
+    name = Column(String(255), nullable=False)    
     # Relations 
     user = relationship('User', back_populates='patient_profile')
-    doctor = relationship('Doctor', back_populates='patients')
+    doctor_associations = relationship("DoctorPatient", back_populates="patient")
     triages = relationship('Triage', back_populates='patient')
 
 class Triage(Base):

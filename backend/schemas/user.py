@@ -1,11 +1,15 @@
 from pydantic import BaseModel, EmailStr
-from ..db.base import UserRole
+from ..db.base import UserRole, UserGender
+from datetime import date
 
 # Pydantic models for user data insertion (Registration)
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    role: UserRole
+    birthdate: date
+    gender: UserGender
+    role: UserRole   
+    DNI: str 
 
 # Pydantic model for data visualization (after registration)
 class UserOut(BaseModel):

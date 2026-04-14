@@ -48,12 +48,12 @@ def create_triage(triage_request: TriageCreateRequest,
             detail='Patient not found or profile not completed.'
         )
     # Calculates the age based on the birthdate
-    patient_age = age_calculate(target_user.patient_profile.birthdate)
+    patient_age = age_calculate(target_user.birthdate)
 
     # Prepare data for the prediction model
     data_usage = PatientCondition(
         name = target_user.patient_profile.name,
-        gender = target_user.patient_profile.gender.value,  
+        gender = target_user.gender,  
         age = patient_age,
         description = triage_request.description,
         symptoms = triage_request.symptoms,    

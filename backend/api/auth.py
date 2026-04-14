@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from ..db.session import get_db
 from ..db.base import User
 from ..core.security import get_password_hash, verify_password, create_access_token
-from ..api.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -49,7 +48,10 @@ def registration(user: UserCreate, db: Session = Depends(get_db)):
     new_user = User(
         email=user.email, 
         hashed_password=hashed_pass, 
-        role=user.role
+        birthdate=user.birthdate,
+        gender=user.gender,
+        role=user.role,
+        DNI=user.DNI
         )
     
     # TRANSACTIONS
@@ -84,11 +86,3 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         'access_token': access_token,
         'token_type': 'bearer'
     }
-
-@router.get("/me", response_model=UserOut, tags=["Authentication"])
-def read_users_me(current_user: User = Depends(get_current_user)):
-    """
-    Si llegamos aquí, es porque el 'Depends' hizo toda la magia:
-    validó el token, buscó en la DB y nos entregó el objeto usuario.
-    """
-    return current_user

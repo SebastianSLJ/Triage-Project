@@ -42,10 +42,7 @@ def patient_register(patient_data: PatientProfile, current_user: User = Depends(
     
     new_patient = Patient(
         user_id =  target_user.id,
-        doctor_id = current_user.doctor_profile.id,
         name = patient_data.name,
-        birthdate = patient_data.birthdate,
-        gender = patient_data.gender
     )
     db.add(new_patient)
     db.commit()

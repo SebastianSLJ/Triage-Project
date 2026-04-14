@@ -4,7 +4,7 @@ from ..api.dependencies import get_current_user
 from ..db.base import User, Doctor, UserRole
 from ..db.session import get_db
 from sqlalchemy.orm import Session
-from ..schemas.doctor import DoctorProfile, DoctorProfileOut, PatientOut, MessageOut
+from ..schemas.doctor import DoctorProfile, DoctorProfileOut, MessageOut, PatientDoctorAssociationOut
 
 
 router = APIRouter()
@@ -32,8 +32,9 @@ def complete_profile(doctor_data: DoctorProfile, current_user: User = Depends(ge
             status_code=status.HTTP_400_BAD_REQUEST, detail='Doctor already exists'
         )
     # Complete the doctor profile using the pydantic model to verify the data entry (Specific fields - speciality, medical_license)
-    new_doctor = Doctor(
+    new_doctor = Doctor(        
         user_id = current_user.id,
+        doctor_name = doctor_data.doctor_name,
         speciality = doctor_data.speciality,
         medical_license = doctor_data.medical_license
     )
@@ -53,7 +54,7 @@ def read_doctors_info(current_user: User = Depends(get_current_user)):
     denied_access(current_user, UserRole.DOCTOR)
     return current_user
 
-@router.get('/patients', response_model=List[PatientOut], tags=['Doctors'])
+@router.get('/patients', response_model=List[PatientDoctorAssociationOut], tags=['Doctors'])
 def read_doctor_patient(current_user: User = Depends(get_current_user)):
     """
     Show doctor patients as a list (json arrays)
@@ -65,4 +66,4 @@ def read_doctor_patient(current_user: User = Depends(get_current_user)):
             detail="Doctor profile not completed. Please fill your professional data first."
         )
     denied_access(current_user, UserRole.DOCTOR)
-    return current_user.doctor_profile.patients
+    return current_user.doctor_profile.patient_associations
