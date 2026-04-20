@@ -45,7 +45,7 @@ def complete_profile(doctor_data: DoctorProfile, current_user: User = Depends(ge
     return {'message': 'Profile succesfully updated'}
 
 
-@router.get('/me', response_model=DoctorProfileOut, tags=['Doctors'])
+@router.get('/me', response_model=DoctorProfileOut, tags=['Doctors'], summary='Read Doctor Info')
 def read_doctors_info(current_user: User = Depends(get_current_user)):
     """
     If user is a doctor but has not completed his profile, 
@@ -54,7 +54,7 @@ def read_doctors_info(current_user: User = Depends(get_current_user)):
     denied_access(current_user, UserRole.DOCTOR)
     return current_user
 
-@router.get('/patients', response_model=List[PatientDoctorAssociationOut], tags=['Doctors'])
+@router.get('/patients', response_model=List[PatientDoctorAssociationOut], tags=['Doctors'], summary='Read Doctor Patients')
 def read_doctor_patient(current_user: User = Depends(get_current_user)):
     """
     Show doctor patients as a list (json arrays)

@@ -30,14 +30,14 @@ class UserState(enum.Enum):
 class User(Base):
     __tablename__   = 'users'
     id = Column(Integer, primary_key=True)
-    email = Column(String(255), unique=True, nullable=False, index=True)
-    hashed_password = Column(String(255), nullable=False)
-    DNI = Column(String(20), unique=True, nullable=False)
+    email = Column(String(255), unique=True, nullable=True)
+    hashed_password = Column(String(255), nullable=True)
+    DNI = Column(String(20), unique=True, nullable=False, index=True)
     state = Column(Enum(UserState), nullable=False, default=UserState.PENDING)
     role = Column(Enum(UserRole), nullable=False)
-    is_active = Column(Boolean, default=True)
-    birthdate = Column(DateTime, nullable=False)
-    gender = Column(Enum(UserGender), nullable=False)
+    is_active = Column(Boolean, default=False)
+    birthdate = Column(DateTime, nullable=True)
+    gender = Column(Enum(UserGender), nullable=True)
     created_at = Column(DateTime, server_default=func.now())
 
     # Relations
@@ -75,6 +75,7 @@ class Patient(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     name = Column(String(255), nullable=False)    
+    DNI = Column(String(20), unique=True, nullable=False)
     # Relations 
     user = relationship('User', back_populates='patient_profile')
     doctor_associations = relationship("DoctorPatient", back_populates="patient")

@@ -11,6 +11,7 @@ class MessageOut(BaseModel):
 # Patient profile information (For insert in DB)
 class PatientProfile(BaseModel):
     name: str
+    DNI: str
     model_config = ConfigDict(from_attributes=True)
     
 # Chart to show Patient profile 

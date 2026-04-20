@@ -11,10 +11,6 @@ Base.metadata.create_all(engine)
 app = FastAPI()
 
 
-@app.get("/")
-def root():
-    return {"Hello: World"}
-
 app.include_router(auth_router, prefix='/api/auth')
 app.include_router(doctors_router, prefix='/api/doctors')
 app.include_router(patients_router, prefix='/api/patients')
