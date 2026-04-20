@@ -1,9 +1,9 @@
 from fastapi import HTTPException, APIRouter, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
-from ..schemas.user import UserCreate, UserOut
+from ..schemas.user import UserRegister, UserRole, MessageResponse
 from sqlalchemy.orm import Session
 from ..db.session import get_db
-from ..db.base import User
+from ..db.base import User, UserState
 from ..core.security import get_password_hash, verify_password, create_access_token
 
 router = APIRouter()
@@ -13,7 +13,7 @@ router = APIRouter()
     # Path
     '/registration',
     # Define qué datos verá el cliente (oculta la contraseña)
-    response_model=UserOut,
+    response_model=MessageResponse,
     # El código 201 indica que un recurso fue creado con éxito
     status_code=status.HTTP_201_CREATED,
     # Estas etiquetas agrupan tus rutas en la documentación /docs
@@ -25,7 +25,7 @@ router = APIRouter()
 )
 
 # Function for user registration in DB 
-def registration(user: UserCreate, db: Session = Depends(get_db)):
+def registration(data: UserRegister, db: Session = Depends(get_db)):
     """
     Registrates a new user    
     
@@ -33,35 +33,52 @@ def registration(user: UserCreate, db: Session = Depends(get_db)):
     identity with the specified role.
     """
     #User searching (Early return)    
-    existent_user = db.query(User).filter(User.email == user.email).first()
+    existing_user = db.query(User).filter(User.DNI== data.DNI).first()
 
-    if existent_user:
+    if existing_user:
+        # Case A: The account is already active (Someone already use this DNI with this email)
+        if existing_user.email is not None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="Este DNI ya tiene una cuenta activa vinculada."
+            )
+        
+        # Case B: Uncreated account (Only created by a doctor for Triage association)
+        # Here the user can take an created account created by a doctor (Using his DNI and email - Coincidence)
+        existing_user.email = data.email
+        hashed_pass = get_password_hash(data.password)
+        existing_user.hashed_password = hashed_pass
+        existing_user.birthdate = data.birthdate
+        existing_user.gender = data.gender
+        existing_user.is_active = True # Activate the account so the user can login 
+        existing_user.state = UserState.ACTIVE
+        db.commit()
+        return {"message": "Cuenta activada y vinculada exitosamente"}
+        
+    # Case C: The DNI doesn't exist at all (Traditional Register)
+    # Verify if the email isn't taken already by another DNI
+    email_check = db.query(User).filter(User.email == data.email).first()
+    if email_check:
         raise HTTPException(
-            status_code= status.HTTP_409_CONFLICT,
-            detail='Email already exists'
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El correo electrónico ya está en uso."
         )
-    
-    #Hash password before create user instance 
-    hashed_pass = get_password_hash(user.password)
 
-    # User instance for commit user
     new_user = User(
-        email=user.email, 
-        hashed_password=hashed_pass, 
-        birthdate=user.birthdate,
-        gender=user.gender,
-        role=user.role,
-        DNI=user.DNI
-        )
+        DNI=data.DNI,
+        email=data.email,
+        hashed_password=hashed_pass,
+        birthdate=data.birthdate,
+        gender=data.gender,
+        role=UserRole.PATIENT,
+        state=UserState.ACTIVE,
+        is_active=True        
+    )
     
-    # TRANSACTIONS
-    # Save
     db.add(new_user)
     db.commit()
-    # Object update with DB data
-    db.refresh(new_user)
-    # Return new_user to watch de created data
-    return new_user
+    return {"message": "Usuario registrado exitosamente"}
+    
 
 @router.post('/login',summary='Login and Token get',tags=["Authentication"])
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):

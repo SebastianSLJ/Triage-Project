@@ -1,6 +1,5 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
-from datetime import date
-from ..db.base import UserGender
+
 
 class MessageOut(BaseModel):
     message: str

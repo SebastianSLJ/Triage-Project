@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, ConfigDict
 from datetime import date
 from ..db.base import UserGender
 from .doctor import DoctorProfile, PatientBasicInfo
