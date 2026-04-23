@@ -34,7 +34,7 @@ def registration(data: UserRegister, db: Session = Depends(get_db)):
     """
     #User searching (Early return)    
     existing_user = db.query(User).filter(User.DNI== data.DNI).first()
-
+    hashed_pass = get_password_hash(data.password)
     if existing_user:
         # Case A: The account is already active (Someone already use this DNI with this email)
         if existing_user.email is not None:
@@ -45,8 +45,7 @@ def registration(data: UserRegister, db: Session = Depends(get_db)):
         
         # Case B: Uncreated account (Only created by a doctor for Triage association)
         # Here the user can take an created account created by a doctor (Using his DNI and email - Coincidence)
-        existing_user.email = data.email
-        hashed_pass = get_password_hash(data.password)
+        existing_user.email = data.email        
         existing_user.hashed_password = hashed_pass
         existing_user.birthdate = data.birthdate
         existing_user.gender = data.gender
@@ -86,17 +85,17 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     1. Search user by email
     2. Compare plain password with hashed password in DB
     3. Validate, generate and return JWT Token 
-    """
-    # 1. Search for user (filter by email and compare with the email entrance in login)
+    """    
+    # Search for user (filter by email and compare with the email entrance in login)
     user = db.query(User).filter(User.email == form_data.username).first()
-    # 2. Verify the password using the function in security
+    # Verify the password using the function in security
     if not user or not verify_password(form_data.password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='Incorrect email or password',
                 headers={"WWW-Authenticate": "Bearer"}
             )
-    # 3. Generate the token 
+    # Generate the token 
     # Save email in subject field in JWT
     access_token = create_access_token(data={'sub': user.email})
     return{

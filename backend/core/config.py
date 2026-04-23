@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     DB_NAME: str
     DB_PORT: str
     DB_HOST: str
+    ANTHROPIC_API_KEY: str
+
 
 
     # Pydantic read automatically the .env file

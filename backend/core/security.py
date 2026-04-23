@@ -20,7 +20,7 @@ def create_access_token(data: dict):
     """
     to_encode = data.copy() # dict
 
-    # Calculate the expiration time 
+    # Calculates the expiration time 
     expire = datetime.now(timezone.utc)+timedelta(minutes=int(settings.ACCESS_TOKEN_EXPIRE_MINUTES))
 
     # Add expiration "payload" (Token body)

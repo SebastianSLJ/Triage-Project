@@ -40,7 +40,7 @@ def create_triage(triage_request: TriageCreateRequest,
         )
     # Search patient by email to validate its existence, age and gender.
     # Search the User and his patient profile 
-    target_user = db.query(User).filter(User.email==triage_request.patient_email).first()
+    target_user = db.query(User).filter(User.DNI==triage_request.patient_DNI).first()
     
     if not target_user or not target_user.patient_profile:
         raise HTTPException(
@@ -84,7 +84,9 @@ def create_triage(triage_request: TriageCreateRequest,
         temperature=triage_request.temperature,
         SBP=triage_request.SBP,
         RR=triage_request.RR,
-        priority=db_priority.value
+        priority=db_priority.value,
+        severe_history=triage_request.severe_history,
+        duration_hours=triage_request.duration_hours
     )
     db.add(new_triage)
     db.commit()

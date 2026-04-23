@@ -1,12 +1,11 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
-
+from pydantic import BaseModel, ConfigDict
 
 class MessageOut(BaseModel):
     message: str
 
 
 class TriageCreateRequest(BaseModel): 
-    patient_email: EmailStr   
+    patient_DNI: str  
     description: str
     symptoms: str
     HR: int
