@@ -19,9 +19,11 @@ router = APIRouter()
     # Estas etiquetas agrupan tus rutas en la documentación /docs
     tags=["Authentication"],
     # Un resumen corto que aparece en la lista de Swagger
-    summary="New user registration",
+    summary="Register a new platform account",
     # Una descripción detallada que explica reglas de negocio
-    description="Create an user in DB. The profile (Doctor/Pacient) must be completed after"
+    description="Initialized user creation in the system (This endpoint" \
+    " handles identity creation and credential hashing) Note: After registration, " \
+    "the user must complete their specific profile (Doctor or Patient) to access core features."
 )
 
 # Function for user registration in DB 
@@ -79,7 +81,10 @@ def registration(data: UserRegister, db: Session = Depends(get_db)):
     return {"message": "Usuario registrado exitosamente"}
     
 
-@router.post('/login',summary='Login and Token get',tags=["Authentication"])
+@router.post('/login',summary='Authenticate user and issue JWT',description='Validates user credentials and returns ' \
+'a JSON Web Token (JWT) for stateless authentication (This token is required for all subsequent authorized requests)'
+,tags=["Authentication"]
+)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
     1. Search user by email

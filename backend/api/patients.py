@@ -13,8 +13,9 @@ router = APIRouter()
         '/register',
         status_code=status.HTTP_201_CREATED,
         tags=['Patients'],        
-        summary='Patient profile completion',
-        description='Complete patient profile with specific data - Onyl Doctor user can modify this information',
+        summary='Initialize patient clinical record',
+        description="sets up the patient's formal profile (DNI verification) Access Contrl: " \
+        "For data integrity, only authorized medical staff (Doctors) can create or modify this clinical information.",
         response_model=MessageOut              
     )
 def patient_register(patient_data: PatientProfile, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -75,7 +76,12 @@ def patient_register(patient_data: PatientProfile, current_user: User = Depends(
     db.commit()
     return {'message': 'Pacient vinculated succesfully'}
 
-@router.get('/me', response_model=PatientProfileOut, tags=['Patients'], description='Patient user can see his data and history')
+@router.get('/me', response_model=PatientProfileOut,
+        tags=['Patients'],
+        summary='Access personal medical dashboard', 
+        description='Provides the authenticated patient with a view of ' \
+        'their personal data, active associations with doctors, and clinical history.'             
+    )
 def read_patient_self_info(current_user: User = Depends(get_current_user)):
     if current_user.role != UserRole.PATIENT:
         raise HTTPException(status_code=403, detail="Access denied: You are not a patient")    

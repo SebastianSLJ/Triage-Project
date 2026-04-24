@@ -11,7 +11,7 @@ import json
 from ..core.config import settings
 
 router = APIRouter()
-client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
 SYSTEM_PROMPT = """Actúas como un motor de extracción de datos médicos de alta precisión para un sistema de triaje hospitalario. Tu objetivo es convertir el lenguaje natural del paciente en un objeto JSON estructurado que alimentará un modelo de Machine Learning y un sistema de direccionamiento a especialistas.
 
@@ -44,10 +44,13 @@ Esquema JSON Requerido:
 @router.post("/recommend-specialty", 
             response_model=SpecialtyRecommendation,
             tags=['Patients'],
-            summary='Speciality assignation for patient using symptoms (Anthropic response)'
-
+            summary='AI-powered patient routing and triage',
+            description='Analyzes patient symptoms using LLM inference (Anthropic Claude), ' \
+            'it identifies potential medical specialties, extracts clinical signs '
+            'and determines urgency (If a life-threatening situation is detected, ' \
+            'it triggers a high-priority triage event)'
     )
-def recommend_specialty(
+async def recommend_specialty(
     data: SymptomInput,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -63,7 +66,7 @@ def recommend_specialty(
 
     try:
         # Call Claude
-        message = client.messages.create(
+        message = await client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=1000,
         system=SYSTEM_PROMPT,

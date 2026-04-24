@@ -22,8 +22,9 @@ def age_calculate(birthdate):
     '/triage',
         status_code=status.HTTP_201_CREATED,
         tags=['Patients'],        
-        summary='Patient Condition Completed',
-        description='Complete the patient status with medical tests and history',
+        summary='Document clinical status and vitals',
+        description='Records a manual triage event, including vital signs and medical history. ' \
+        'This serves as the baseline for clinical prioritization within the hospital system.',
         response_model=MessageOut
 )
 def create_triage(triage_request: TriageCreateRequest,

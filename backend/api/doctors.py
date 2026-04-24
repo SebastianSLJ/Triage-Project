@@ -9,8 +9,8 @@ from ..schemas.doctor import DoctorProfile, DoctorProfileOut, MessageOut, Patien
 
 router = APIRouter()
 
-def denied_access(user: User, requierd_role: UserRole):    
-    if user.role!=requierd_role:
+def denied_access(user: User, required_role: UserRole):    
+    if user.role!=required_role:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied: This action requires the {required_role} value"
         ) 
@@ -19,8 +19,10 @@ def denied_access(user: User, requierd_role: UserRole):
     '/profile_update',
     status_code=status.HTTP_201_CREATED,
     tags=['Doctors'],
-    summary='Doctor profile completion',    
-    description='Completes the doctor profile with specified data',
+    summary='Finalize medical professional profile',    
+    description='Updates the extended profile for Doctor accounts, including medical license, ' \
+    'specialized fields, and availability ' \
+    ' (Completion of this profile is mandatory to begin receiving patient associations)',
     response_model=MessageOut   
 )
 def complete_profile(doctor_data: DoctorProfile, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):  
@@ -45,7 +47,11 @@ def complete_profile(doctor_data: DoctorProfile, current_user: User = Depends(ge
     return {'message': 'Profile succesfully updated'}
 
 
-@router.get('/me', response_model=DoctorProfileOut, tags=['Doctors'], summary='Read Doctor Info')
+@router.get('/me', response_model=DoctorProfileOut, tags=['Doctors'], 
+        summary="Retrieve current doctor's profile", 
+        description='Returns detailed information for the authenticated doctor, ' \
+        'including medical registry and clinical specialties.'
+    )
 def read_doctors_info(current_user: User = Depends(get_current_user)):
     """
     If user is a doctor but has not completed his profile, 
@@ -54,7 +60,12 @@ def read_doctors_info(current_user: User = Depends(get_current_user)):
     denied_access(current_user, UserRole.DOCTOR)
     return current_user
 
-@router.get('/patients', response_model=List[PatientDoctorAssociationOut], tags=['Doctors'], summary='Read Doctor Patients')
+@router.get('/patients', response_model=List[PatientDoctorAssociationOut], 
+            tags=['Doctors'], 
+            summary='List associated patients',
+            description='Retrieves all active patient-doctor associations ' \
+            '(This view allows doctors to manage their current caseload and review patient history)'
+    )
 def read_doctor_patient(current_user: User = Depends(get_current_user)):
     """
     Show doctor patients as a list (json arrays)
