@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
 
     # Pydantic read automatically the .env file
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env", extra='ignore')
 
 # Create an unique instance (Singleton)
 settings = Settings()

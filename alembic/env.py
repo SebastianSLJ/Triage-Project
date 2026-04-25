@@ -7,8 +7,7 @@ import sys
 from alembic import context
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from backend.core.config import settings
-from backend.db.base import User, Patient, Doctor, Triage, Base
+from backend.db.base import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -43,6 +42,9 @@ def run_migrations_offline() -> None:
     script output.
 
     """   
+    db_url = os.getenv('DB_URI')    
+    if db_url:
+        config.set_main_option("sqlalchemy.url", db_url)
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -56,12 +58,12 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode.
+    # 1. FORZAMOS la URL de Docker antes de crear el engine
+    db_url = os.getenv('DB_URI')
+    if db_url:
+        config.set_main_option("sqlalchemy.url", db_url)
 
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
-
-    """
+    # 2. Ahora el engine usará la URL inyectada ('db:5432')
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -70,7 +72,8 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, 
+            target_metadata=target_metadata
         )
 
         with context.begin_transaction():
