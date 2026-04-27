@@ -9,6 +9,7 @@ class MessageOut(BaseModel):
 
 # We use this class to obtain data (email and is_active) from the table user 
 # This data is not in Patient model (sqlaclhemy)
+# Data for registration
 class PatientBasicInfo(BaseModel):
     name: str
     email: EmailStr

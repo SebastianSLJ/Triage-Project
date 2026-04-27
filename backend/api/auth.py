@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from ..db.session import get_db
 from ..db.base import User, UserState
 from ..core.security import get_password_hash, verify_password, create_access_token
-
+from ..api.dependencies import get_current_user
 router = APIRouter()
 
 
@@ -42,7 +42,7 @@ def registration(data: UserRegister, db: Session = Depends(get_db)):
         if existing_user.email is not None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, 
-                detail="Este DNI ya tiene una cuenta activa vinculada."
+                detail="DNI already registered"
             )
         
         # Case B: Uncreated account (Only created by a doctor for Triage association)
@@ -53,6 +53,7 @@ def registration(data: UserRegister, db: Session = Depends(get_db)):
         existing_user.gender = data.gender
         existing_user.is_active = True # Activate the account so the user can login 
         existing_user.state = UserState.ACTIVE
+        existing_user.role = UserRole.PATIENT
         db.commit()
         return {"message": "Cuenta activada y vinculada exitosamente"}
         
@@ -62,7 +63,7 @@ def registration(data: UserRegister, db: Session = Depends(get_db)):
     if email_check:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El correo electrónico ya está en uso."
+            detail="Email is already in use."
         )
 
     new_user = User(
@@ -71,14 +72,14 @@ def registration(data: UserRegister, db: Session = Depends(get_db)):
         hashed_password=hashed_pass,
         birthdate=data.birthdate,
         gender=data.gender,
-        role=UserRole.PATIENT,
+        role=data.role,
         state=UserState.ACTIVE,
         is_active=True        
     )
     
     db.add(new_user)
     db.commit()
-    return {"message": "Usuario registrado exitosamente"}
+    return {"message": "Successfully registered user"}
     
 
 @router.post('/login',summary='Authenticate user and issue JWT',description='Validates user credentials and returns ' \
@@ -107,3 +108,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         'access_token': access_token,
         'token_type': 'bearer'
     }
+
+@router.get("/me")
+def get_me(current_user: User = Depends(get_current_user)):
+    return {"role": str(current_user.role), "role_type": str(type(current_user.role))}

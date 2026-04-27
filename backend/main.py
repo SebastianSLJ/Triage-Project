@@ -8,8 +8,8 @@ from backend.db.base import Base
 from backend.db.session import engine
 from fastapi.responses import RedirectResponse
 
-Base.metadata.create_all(engine)  
-
+if __name__ == "__main__":
+    Base.metadata.create_all(engine)
 
 app = FastAPI()
 

@@ -8,12 +8,12 @@ from ..schemas.doctor import DoctorProfile, DoctorProfileOut, MessageOut, Patien
 
 
 router = APIRouter()
-
 def denied_access(user: User, required_role: UserRole):    
-    if user.role!=required_role:
+    if user.role != required_role and user.role != required_role.value:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied: This action requires the {required_role} value"
-        ) 
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access Denied: This action requires the {required_role.value} role"
+        )
 
 @router.post(
     '/profile_update',
