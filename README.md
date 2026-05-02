@@ -58,7 +58,7 @@ MediQueue digitaliza y automatiza el flujo de triaje en tres niveles:
 
 ## Arquitectura
 
-![Architecture](arch.png)
+![Architecture](assets/arch.png)
 
 ### Flujo de recomendación de especialista
 
@@ -186,7 +186,7 @@ MOCK_AI=false
 
 La API completa está documentada en Swagger (`/docs`) y ReDoc (`/redoc`).
 
-![Authentication](auth.png)
+![Authentication](assets/auth.png)
 
 ### Flujo típico de uso
 
@@ -233,8 +233,8 @@ POST /api/inquiry/recommend-specialty
 }
 ```
 
-![Predict_test](predict.png)
-![Prediction](response_predict.png)
+![Predict_test](assets/predict.png)
+![Prediction](assets/response_predict.png)
 
 ---
 
