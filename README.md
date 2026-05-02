@@ -11,25 +11,6 @@
 
 <!-- SCREENSHOT: Banner o GIF mostrando Swagger UI con los endpoints principales -->
 
----
-
-## Tabla de Contenidos
-
-- [El Problema](#-el-problema)
-- [La Solución](#-la-solución)
-- [Arquitectura](#-arquitectura)
-- [Stack Tecnológico](#-stack-tecnológico)
-- [Funcionalidades](#-funcionalidades)
-- [Instalación](#-instalación)
-- [Variables de Entorno](#-variables-de-entorno)
-- [Uso de la API](#-uso-de-la-api)
-- [Modelo de Machine Learning](#-modelo-de-machine-learning)
-- [Decisiones de Diseño](#-decisiones-de-diseño)
-- [Tests](#-tests)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-
----
-
 ## El Problema
 
 En una clínica tradicional, un paciente con síntomas debe:
