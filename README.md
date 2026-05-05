@@ -5,7 +5,6 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192?logo=postgresql)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
 ![Claude](https://img.shields.io/badge/Claude-Haiku-blueviolet?logo=anthropic)
-![License](https://img.shields.io/badge/License-MIT-green)
 
 > Sistema backend para gestión de triaje hospitalario con Machine Learning e Inteligencia Artificial Generativa. Clasifica la urgencia de pacientes y los redirige directamente a especialistas, reduciendo costos operativos y optimizando tiempos de atención.
 
